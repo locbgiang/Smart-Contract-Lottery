@@ -33,7 +33,7 @@ import {console} from "forge-std/console.sol"; //  forge library for console.sol
  * @notice This contract is for creating a sample raffle
  * @dev Implement Chainlink VRF2.5
  */
-contract Raffle {
+contract Raffle is VRFConsumerBaseV2Plus {
     /**
      * Errors
      */
@@ -95,11 +95,12 @@ contract Raffle {
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_entranceFee = entranceFee;
         i_interval = interval;
+        i_keyHash = gasLane;
+        i_subscriptionId = subscriptionId;
+        i_callbackGasLimit = callbackGasLimit;
     }
 
     /**
      * Functions
      */
-
-    function enterRaffle() public payable {}
 }
