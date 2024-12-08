@@ -125,5 +125,6 @@ contract AddConsumer is Script {
             "Raffle",
             block.chainid
         );
+        addConsumerUsingConfig(mostRecentDeployed);
     }
 }
