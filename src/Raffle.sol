@@ -41,11 +41,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__SendMoreToEnterRaffle(); // not enough eth to enter raffle
     error Raffle__RaffleNotOpen(); // raffle is not accepting entries
     error Raffle__TransferFailed(); // eth transfer to winner failed
-    error Raffle__UpkeepNotNeeded(
-        uint256 balance,
-        uint256 playersLength,
-        uint256 raffleState
-    ); // conditions for picking a winner are not met
+    error Raffle__UpkeepNotNeeded(uint256 balance, uint256 playersLength, uint256 raffleState); // conditions for picking a winner are not met
 
     /**
      * Type Declarations
@@ -54,6 +50,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     enum RaffleState {
         OPEN, // the raffle is accepting entries
         CALCULATING // a winner is being determined
+
     }
 
     /**
@@ -107,7 +104,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
     /**
      * Functions
      */
-
     function enterRaffle() external payable {
         // require(msg.value >= i_entranceFee, "Not enough ETH sent!");  // not gas efficient because it stores string
         // require(msg.value >= i_entranceFee, SendMoreToEnterRaffle());  // only works on certain version
@@ -137,13 +133,13 @@ contract Raffle is VRFConsumerBaseV2Plus {
      *  @param -ignored
      *  @return upkeepNeeded - true if it's time to restart the lottery
      */
-
-    function checkUpkeep(
-        bytes memory /* checkData */
-    ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
+    function checkUpkeep(bytes memory /* checkData */ )
+        public
+        view
+        returns (bool upkeepNeeded, bytes memory /* performData */ )
+    {
         // 1. The time interval has passed between raffle run
-        bool timeHasPassed = ((block.timestamp - s_lastTimeStamp) >=
-            i_interval);
+        bool timeHasPassed = ((block.timestamp - s_lastTimeStamp) >= i_interval);
 
         // 2. The lottery is open
         bool isOpen = s_raffleState == RaffleState.OPEN;
@@ -163,33 +159,28 @@ contract Raffle is VRFConsumerBaseV2Plus {
     // 1. get a random number
     // 2. use random number to pick a player
     // 3. be automatically called
-    function performUpkeep(bytes calldata /* performData */) external {
+    function performUpkeep(bytes calldata /* performData */ ) external {
         // check to see if enough time has passed
-        (bool upkeepNeeded, ) = checkUpkeep(""); // call checkUpkeep function to see if upkeep is needed
+        (bool upkeepNeeded,) = checkUpkeep(""); // call checkUpkeep function to see if upkeep is needed
 
         // if upkeep is not needed, revert error
         if (!upkeepNeeded) {
-            revert Raffle__UpkeepNotNeeded(
-                address(this).balance,
-                s_players.length,
-                uint256(s_raffleState)
-            );
+            revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
         }
 
         s_raffleState = RaffleState.CALCULATING; // Set raffleState as calculating
 
-        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
-            .RandomWordsRequest({
-                keyHash: i_keyHash,
-                subId: i_subscriptionId,
-                requestConfirmations: REQUEST_CONFIRMATIONS,
-                callbackGasLimit: i_callbackGasLimit,
-                numWords: NUM_WORDS,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
-                )
-            });
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
+            keyHash: i_keyHash,
+            subId: i_subscriptionId,
+            requestConfirmations: REQUEST_CONFIRMATIONS,
+            callbackGasLimit: i_callbackGasLimit,
+            numWords: NUM_WORDS,
+            extraArgs: VRFV2PlusClient._argsToBytes(
+                // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
+                VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+            )
+        });
 
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
 
@@ -197,10 +188,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit RequestedRaffleWinner(requestId);
     }
 
-    function fulfillRandomWords(
-        uint256,
-        uint256[] calldata randomWords
-    ) internal override {
+    function fulfillRandomWords(uint256, uint256[] calldata randomWords) internal override {
         // Checks (Make sure we want to run this function)
 
         // Effect (internal contract state)
@@ -213,7 +201,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit WinnerPicked(recentWinner);
 
         // interactions (external contract interaction)
-        (bool success, ) = recentWinner.call{value: address(this).balance}("");
+        (bool success,) = recentWinner.call{value: address(this).balance}("");
         if (!success) {
             revert Raffle__TransferFailed();
         }
