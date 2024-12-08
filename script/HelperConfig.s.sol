@@ -55,6 +55,7 @@ contract HelperConfig is Script, CodeConstants {
      * Functions
      */
 
+    // Given the chainid, we will run the correct configuration
     function getConfigByChainId(
         uint256 chainId
     ) public returns (NetworkConfig memory) {
@@ -67,10 +68,12 @@ contract HelperConfig is Script, CodeConstants {
         }
     }
 
+    // Deploy raffle script will call this function to find out what chain we are currently on
     function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }
 
+    // sepolia configuration
     function getSepoliaEthConfig() public pure returns (NetworkConfig memory) {
         return
             NetworkConfig({
@@ -85,6 +88,7 @@ contract HelperConfig is Script, CodeConstants {
             });
     }
 
+    // local configuration
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
         // check to see if we set an active network config
         if (localNetworkConfig.vrfCoordinator != address(0)) {
