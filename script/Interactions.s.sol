@@ -115,8 +115,11 @@ contract AddConsumer is Script {
         console.log("Using subscription Id: ", subId);
         console.log("On ChainId: ", block.chainid);
 
-        vm.startBroadcast();
-        VRFCoordinatorV2_5Mock(account).addConsumer(subId, contractToAddtoVrf);
+        vm.startBroadcast(account);
+        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(
+            subId,
+            contractToAddtoVrf
+        );
         vm.stopBroadcast();
     }
 
