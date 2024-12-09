@@ -32,6 +32,7 @@ import {console} from "forge-std/console.sol"; //  forge library for console.sol
  * @author Loc Giang
  * @notice This contract is for creating a sample raffle
  * @dev Implement Chainlink VRF2.5
+ * deployed to: 0x367fa3b89dd45Be452b3B3Ca5b23ED0760D0bA8a
  */
 contract Raffle is VRFConsumerBaseV2Plus {
     /**
